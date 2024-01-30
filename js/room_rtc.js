@@ -71,6 +71,8 @@ let joinRoomInit = async () => {
     client.on('user-published', handleUserPublished)
     // Xảy ra khi người dùng từ xa ngoại tuyến.
     client.on('user-left', handleUserLeft)
+    // User join vào
+    client.on('user-joined', handleUserJoined)
     // Xảy ra khi người dùng từ xa hủy xuất bản bản âm thanh hoặc video.
     //client.on('user-unpublished', handleUserUnPublished)
 }
@@ -80,17 +82,27 @@ let joinStream = async () => {
     document.getElementsByClassName("stream__actions")[0].style.display =
         "flex";
 
-    //Tạo một bản nhạc âm thanh và một bản nhạc video.
-    localTracks = await AgoraRTC.createMicrophoneAndCameraTracks(
-        {},
-        {
-            encoderConfig: {
-                width: { min: 640, ideal: 1920, max: 1920 },
-                height: { min: 480, ideal: 1080, max: 1080 },
-            },
-        },
-    );
+    var micDevices = AgoraRTC.getMicrophones();
+    var cameraDevices = AgoraRTC.getCameras();
 
+    if (cameraDevices.length != 0) {
+        //Tạo một bản nhạc âm thanh và một bản nhạc video.
+        localTracks = await AgoraRTC.createMicrophoneAndCameraTracks(
+            {},
+            {
+                encoderConfig: {
+                    width: { min: 640, ideal: 1920, max: 1920 },
+                    height: { min: 480, ideal: 1080, max: 1080 },
+                },
+            },
+        );
+        
+        // Phát một bản nhạc đa phương tiện trên trang web.
+        localTracks[1].play(`user-${uid}`);
+        // Xuất bản các bản âm thanh và/hoặc video cục bộ lên một kênh.
+        await client.publish([localTracks[0], localTracks[1]]);
+    }
+    
     let player = `<div class="video__container" id="user-container-${uid}">
                     <div class="video-player" id="user-${uid}"></div>
                  </div>`;
@@ -102,14 +114,8 @@ let joinStream = async () => {
         .getElementById(`user-container-${uid}`)
         .addEventListener("click", expandVideoFrame);
 
-    if (localTracks.length == 0) {
-        localTracks = AgoraRTC.createBufferSourceAudioTrack();
+    if (localTracks.length != 0) {
     }
-
-    // Phát một bản nhạc đa phương tiện trên trang web.
-    localTracks[1].play(`user-${uid}`);
-    // Xuất bản các bản âm thanh và/hoặc video cục bộ lên một kênh.
-    await client.publish([localTracks[0], localTracks[1]]);
 }
 
 let switchToCamera = async () => {
@@ -127,6 +133,10 @@ let switchToCamera = async () => {
 
     localTracks[1].play(`user-${uid}`)
     await client.publish([localTracks[1]])
+}
+
+let handleUserJoined = async (user, mediaType) => {
+    console.log('user join');
 }
 
 let handleUserPublished = async (user, mediaType) => {
