@@ -80,10 +80,10 @@ let joinStream = async () => {
     document.getElementsByClassName('stream__actions')[0].style.display = 'flex'
 
     //Tạo một bản nhạc âm thanh và một bản nhạc video.
-    // localTracks = await AgoraRTC.createMicrophoneAndCameraTracks({}, {encoderConfig:{
-    //     width:{min:640, ideal:1920, max:1920},
-    //     height:{min:480, ideal:1080, max:1080}
-    // }})
+    localTracks = await AgoraRTC.createMicrophoneAndCameraTracks({}, {encoderConfig:{
+        width:{min:640, ideal:1920, max:1920},
+        height:{min:480, ideal:1080, max:1080}
+    }})
 
     console.log(3, localTracks);
 
@@ -96,9 +96,9 @@ let joinStream = async () => {
     document.getElementById(`user-container-${uid}`).addEventListener('click', expandVideoFrame)
 
     // Phát một bản nhạc đa phương tiện trên trang web.
-    // localTracks[1].play(`user-${uid}`)
+    localTracks[1].play(`user-${uid}`)
     // Xuất bản các bản âm thanh và/hoặc video cục bộ lên một kênh.
-    // await client.publish([localTracks[0], localTracks[1]])
+    await client.publish([localTracks[0], localTracks[1]])
 }
 
 let switchToCamera = async () => {
@@ -153,6 +153,7 @@ let handleUserPublished = async (user, mediaType) => {
 }
 
 let handleUserLeft = async (user) => {
+    console.log('user left')
     delete remoteUsers[user.uid]
     let item = document.getElementById(`user-container-${user.uid}`)
     if(item){
