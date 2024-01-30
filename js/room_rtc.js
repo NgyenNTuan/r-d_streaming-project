@@ -1,4 +1,4 @@
-const APP_ID = "7c945e26484649719fe114c215de3f99"
+const APP_ID = "6a6bbcb63d9642ec8d71de44edd8ca8a"
 
 let uid = sessionStorage.getItem('uid')
 if(!uid){
@@ -6,6 +6,7 @@ if(!uid){
     sessionStorage.setItem('uid', uid)
 }
 
+// Nếu dự án của bạn kích hoạt Chứng chỉ ứng dụng để xác thực Mã thông báo, hãy điền giá trị Mã thông báo được tạo tại đây
 let token = null;
 let client;
 
@@ -32,58 +33,53 @@ let localScreenTracks;
 let sharingScreen = false;
 
 let joinRoomInit = async () => {
+    // Tạo và trả về một RtmClient instance
     rtmClient = await AgoraRTM.createInstance(APP_ID)
+    // Đăng nhập vào hệ thống Agora RTM
+    /**
+     * - Nếu bạn sử dụng Agora RTM SDK cùng với Agora RTC SDK, Agora khuyên bạn nên tránh đăng nhập vào hệ thống RTM và tham gia kênh RTC cùng một lúc.
+     * - Nếu người dùng đăng nhập bằng cùng một uid từ một phiên bản khác, người dùng sẽ bị loại khỏi thông tin đăng nhập trước đó của bạn và bị xóa 
+     * khỏi các kênh đã tham gia trước đó.
+     */
     await rtmClient.login({uid,token})
 
+    // Thêm hoặc cập nhật thuộc tính của người dùng cục bộ.
     await rtmClient.addOrUpdateLocalUserAttributes({'name':displayName})
 
+    // Tạo một RtmChannel instance
     channel = await rtmClient.createChannel(roomId)
+    // Tham gia một kênh. Sau khi tham gia kênh, người dùng có thể nhận được tin nhắn kênh và thông báo về những người dùng khác tham gia hoặc rời khỏi kênh.
     await channel.join()
 
+    // Lắng nghe các sự kiện, chẳng hạn như người dùng tham gia kênh.
     channel.on('MemberJoined', handleMemberJoined)
+    // Người dùng rời kênh
     channel.on('MemberLeft', handleMemberLeft)
+    // Nghe tin nhắn kênh.
     channel.on('ChannelMessage', handleChannelMessage)
 
+    // Lấy danh sách thành viên của kênh.
     getMembers()
     addBotMessageToDom(`Welcome to the room ${displayName}! 👋`)
 
+    // Logic mã khởi tạo, bắt buộc. Tạo một đối tượng client cục bộ để quản lý cuộc gọi.
     client = AgoraRTC.createClient({mode:'rtc', codec:'vp8'})
+    // Cho phép user tham gia một room
     await client.join(APP_ID, roomId, token, uid)
 
+    // Xảy ra khi người dùng từ xa xuất bản bản âm thanh hoặc video.
     client.on('user-published', handleUserPublished)
+    // Xảy ra khi người dùng từ xa ngoại tuyến.
     client.on('user-left', handleUserLeft)
-    client.on('stream-added', async (event) => {
-        console.log(1)
-        const { stream } = event;
-
-        if (stream.hasScreenVideoTrack()) {
-            const screenTrack = await AgoraRTC.getScreenVideoTrack();
-
-            document.getElementById(`user-container-${uid}`).remove()
-            displayFrame.style.display = 'block'
-    
-            let player = `<div class="video__container" id="user-container-${uid}">
-                    <div class="video-player" id="user-${uid}"></div>
-                </div>`
-    
-            displayFrame.insertAdjacentHTML('beforeend', player)
-            document.getElementById(`user-container-${uid}`).addEventListener('click', expandVideoFrame)
-    
-            userIdInDisplayFrame = `user-container-${uid}`
-            screenTrack.play(`user-${uid}`)
-    
-            await client.unpublish([screenTrack[1]])
-            await client.publish([screenTrack])
-
-            // Play screen track
-        }
-    });
+    // Xảy ra khi người dùng từ xa hủy xuất bản bản âm thanh hoặc video.
+    //client.on('user-unpublished', handleUserUnPublished)
 }
 
 let joinStream = async () => {
     document.getElementById('join-btn').style.display = 'none'
     document.getElementsByClassName('stream__actions')[0].style.display = 'flex'
 
+    //Tạo một bản nhạc âm thanh và một bản nhạc video.
     // localTracks = await AgoraRTC.createMicrophoneAndCameraTracks({}, {encoderConfig:{
     //     width:{min:640, ideal:1920, max:1920},
     //     height:{min:480, ideal:1080, max:1080}
@@ -99,7 +95,9 @@ let joinStream = async () => {
     document.getElementById('streams__container').insertAdjacentHTML('beforeend', player)
     document.getElementById(`user-container-${uid}`).addEventListener('click', expandVideoFrame)
 
+    // Phát một bản nhạc đa phương tiện trên trang web.
     // localTracks[1].play(`user-${uid}`)
+    // Xuất bản các bản âm thanh và/hoặc video cục bộ lên một kênh.
     // await client.publish([localTracks[0], localTracks[1]])
 }
 
@@ -109,6 +107,7 @@ let switchToCamera = async () => {
                  </div>`
     displayFrame.insertAdjacentHTML('beforeend', player)
 
+    // Gửi hoặc dừng gửi dữ liệu đa phương tiện của bản nhạc.
     await localTracks[0].setMuted(true)
     await localTracks[1].setMuted(true)
 
@@ -123,6 +122,7 @@ let handleUserPublished = async (user, mediaType) => {
     remoteUsers[user.uid] = user
     console.log('user published')
 
+    // Đăng ký các bản âm thanh và/hoặc video của người dùng từ xa.
     await client.subscribe(user, mediaType)
 
     let player = document.getElementById(`user-container-${user.uid}`)
@@ -133,7 +133,6 @@ let handleUserPublished = async (user, mediaType) => {
 
         document.getElementById('streams__container').insertAdjacentHTML('beforeend', player)
         document.getElementById(`user-container-${user.uid}`).addEventListener('click', expandVideoFrame)
-   
     }
 
     if(displayFrame.style.display){
@@ -143,13 +142,14 @@ let handleUserPublished = async (user, mediaType) => {
     }
 
     if(mediaType === 'video'){
+        // Phát video từ xa
         user.videoTrack.play(`user-${user.uid}`)
     }
 
     if(mediaType === 'audio'){
+        // Phát âm thanh từ xa
         user.audioTrack.play()
     }
-
 }
 
 let handleUserLeft = async (user) => {
@@ -206,6 +206,7 @@ let toggleScreen = async (e) => {
         cameraButton.classList.remove('active')
         cameraButton.style.display = 'none'
 
+        // Tạo một đoạn video để chia sẻ màn hình.
         localScreenTracks = await AgoraRTC.createScreenVideoTrack()
 
         console.log(2, document.getElementById(`user-container-${uid}`), uid)
@@ -220,9 +221,12 @@ let toggleScreen = async (e) => {
         document.getElementById(`user-container-${uid}`).addEventListener('click', expandVideoFrame)
 
         userIdInDisplayFrame = `user-container-${uid}`
+        // Chạy video màn hình
         localScreenTracks.play(`user-${uid}`)
 
+        // Hủy xuất bản các bản âm thanh và/hoặc video cục bộ.
         await client.unpublish([localTracks[1]])
+        // Xuất bản các bản âm thanh và/hoặc video cục bộ lên một kênh.
         await client.publish([localScreenTracks])
 
         let videoFrames = document.getElementsByClassName('video__container')
@@ -232,7 +236,6 @@ let toggleScreen = async (e) => {
               videoFrames[i].style.width = '100px'
             }
           }
-
 
     }else{
         sharingScreen = false 
@@ -272,10 +275,9 @@ let leaveStream = async (e) => {
         }
     }
 
+    // Cho phép người dùng gửi tin nhắn tới tất cả người dùng trong một kênh.
     channel.sendMessage({text:JSON.stringify({'type':'user_left', 'uid':uid})})
 }
-
-
 
 document.getElementById('camera-btn').addEventListener('click', toggleCamera)
 document.getElementById('mic-btn').addEventListener('click', toggleMic)
