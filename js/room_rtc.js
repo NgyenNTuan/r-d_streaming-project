@@ -33,6 +33,7 @@ let localScreenTracks;
 let sharingScreen = false;
 
 let joinRoomInit = async () => {
+    debugger
     // Tạo và trả về một RtmClient instance
     rtmClient = await AgoraRTM.createInstance(APP_ID)
     // Đăng nhập vào hệ thống Agora RTM
@@ -74,7 +75,7 @@ let joinRoomInit = async () => {
     // User join vào
     client.on('user-joined', handleUserJoined)
     // Xảy ra khi người dùng từ xa hủy xuất bản bản âm thanh hoặc video.
-    //client.on('user-unpublished', handleUserUnPublished)
+    client.on('user-unpublished', handleUserUnPublished)
 }
 
 let joinStream = async () => {
@@ -84,6 +85,7 @@ let joinStream = async () => {
 
     var micDevices = AgoraRTC.getMicrophones();
     var cameraDevices = AgoraRTC.getCameras();
+    console.log('mic and camera', micDevices, cameraDevices);
 
     if (cameraDevices.length != undefined && cameraDevices.length != 0) {
         //Tạo một bản nhạc âm thanh và một bản nhạc video.
@@ -135,8 +137,12 @@ let switchToCamera = async () => {
     await client.publish([localTracks[1]])
 }
 
+let handleUserUnPublished = async (user, mediaType) => {
+    console.log('unpublished', user, mediaType)
+}
+
 let handleUserJoined = async (user, mediaType) => {
-    console.log( 'user joined',user, mediaType, uid);
+    console.log( 'user joined',user.uid, mediaType, uid);
 
     let player = `<div class="video__container" id="user-container-${uid}">
     <div class="video-player" id="user-${uid}"></div>
@@ -242,7 +248,6 @@ let toggleScreen = async (e) => {
         // Tạo một đoạn video để chia sẻ màn hình.
         localScreenTracks = await AgoraRTC.createScreenVideoTrack()
 
-        console.log(2, document.getElementById(`user-container-${uid}`), uid)
         document.getElementById(`user-container-${uid}`).remove()
         displayFrame.style.display = 'block'
 
