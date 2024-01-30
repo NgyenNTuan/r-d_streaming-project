@@ -85,7 +85,7 @@ let joinStream = async () => {
     var micDevices = AgoraRTC.getMicrophones();
     var cameraDevices = AgoraRTC.getCameras();
 
-    if (cameraDevices.length != 0 || cameraDevices != undefined) {
+    if (cameraDevices.length != undefined && cameraDevices.length != 0) {
         //Tạo một bản nhạc âm thanh và một bản nhạc video.
         localTracks = await AgoraRTC.createMicrophoneAndCameraTracks(
             {},
