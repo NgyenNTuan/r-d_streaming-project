@@ -76,6 +76,21 @@ let joinRoomInit = async () => {
     client.on('user-joined', handleUserJoined)
     // Xảy ra khi người dùng từ xa hủy xuất bản bản âm thanh hoặc video.
     client.on('user-unpublished', handleUserUnPublished)
+    client.on('user-info-updated', handleStates1)
+    client.on('stream-type-changed', handleStates2)
+    client.on('published-user-list', handleStates3)
+}
+
+let handleStates1 = async (user, mediaType)=> {
+    console.log('stat1', user, mediaType);
+}
+
+let handleStates2 = async (user, mediaType)=> {
+    console.log('stat2', user, mediaType);
+}
+
+let handleStates3 = async (user, mediaType)=> {
+    console.log('stat2', user, mediaType);
 }
 
 let joinStream = async () => {
