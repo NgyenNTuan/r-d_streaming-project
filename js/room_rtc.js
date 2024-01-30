@@ -137,6 +137,18 @@ let switchToCamera = async () => {
 
 let handleUserJoined = async (user, mediaType) => {
     console.log('user join');
+    console.log(user, mediaType);
+
+    let player = `<div class="video__container" id="user-container-${uid}">
+    <div class="video-player" id="user-${uid}"></div>
+ </div>`;
+
+    document
+        .getElementById("streams__container")
+        .insertAdjacentHTML("beforeend", player);
+    document
+        .getElementById(`user-container-${uid}`)
+        .addEventListener("click", expandVideoFrame);
 }
 
 let handleUserPublished = async (user, mediaType) => {
