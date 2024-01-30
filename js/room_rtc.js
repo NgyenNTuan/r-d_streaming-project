@@ -85,20 +85,19 @@ let joinStream = async () => {
         height:{min:480, ideal:1080, max:1080}
     }})
 
-    console.log(3, localTracks);
-
     let player = `<div class="video__container" id="user-container-${uid}">
                     <div class="video-player" id="user-${uid}"></div>
                  </div>`
-                 console.log('1', player)
 
     document.getElementById('streams__container').insertAdjacentHTML('beforeend', player)
     document.getElementById(`user-container-${uid}`).addEventListener('click', expandVideoFrame)
 
-    // Phát một bản nhạc đa phương tiện trên trang web.
-    localTracks[1].play(`user-${uid}`)
-    // Xuất bản các bản âm thanh và/hoặc video cục bộ lên một kênh.
-    await client.publish([localTracks[0], localTracks[1]])
+    if (localTracks.length != 0) {
+        // Phát một bản nhạc đa phương tiện trên trang web.
+        localTracks[1].play(`user-${uid}`)
+        // Xuất bản các bản âm thanh và/hoặc video cục bộ lên một kênh.
+        await client.publish([localTracks[0], localTracks[1]])
+    }
 }
 
 let switchToCamera = async () => {
