@@ -33,7 +33,6 @@ let localScreenTracks;
 let sharingScreen = false;
 
 let joinRoomInit = async () => {
-    debugger
     // Tạo và trả về một RtmClient instance
     rtmClient = await AgoraRTM.createInstance(APP_ID)
     // Đăng nhập vào hệ thống Agora RTM
