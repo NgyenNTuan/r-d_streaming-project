@@ -76,28 +76,40 @@ let joinRoomInit = async () => {
 }
 
 let joinStream = async () => {
-    document.getElementById('join-btn').style.display = 'none'
-    document.getElementsByClassName('stream__actions')[0].style.display = 'flex'
+    document.getElementById("join-btn").style.display = "none";
+    document.getElementsByClassName("stream__actions")[0].style.display =
+        "flex";
 
     //Tạo một bản nhạc âm thanh và một bản nhạc video.
-    localTracks = await AgoraRTC.createMicrophoneAndCameraTracks({}, {encoderConfig:{
-        width:{min:640, ideal:1920, max:1920},
-        height:{min:480, ideal:1080, max:1080}
-    }})
+    localTracks = await AgoraRTC.createMicrophoneAndCameraTracks(
+        {},
+        {
+            encoderConfig: {
+                width: { min: 640, ideal: 1920, max: 1920 },
+                height: { min: 480, ideal: 1080, max: 1080 },
+            },
+        },
+    );
 
     let player = `<div class="video__container" id="user-container-${uid}">
                     <div class="video-player" id="user-${uid}"></div>
-                 </div>`
+                 </div>`;
 
-    document.getElementById('streams__container').insertAdjacentHTML('beforeend', player)
-    document.getElementById(`user-container-${uid}`).addEventListener('click', expandVideoFrame)
+    document
+        .getElementById("streams__container")
+        .insertAdjacentHTML("beforeend", player);
+    document
+        .getElementById(`user-container-${uid}`)
+        .addEventListener("click", expandVideoFrame);
 
-    if (localTracks.length != 0) {
-        // Phát một bản nhạc đa phương tiện trên trang web.
-        localTracks[1].play(`user-${uid}`)
-        // Xuất bản các bản âm thanh và/hoặc video cục bộ lên một kênh.
-        await client.publish([localTracks[0], localTracks[1]])
+    if (localTracks.length == 0) {
+        localTracks = AgoraRTC.createBufferSourceAudioTrack();
     }
+
+    // Phát một bản nhạc đa phương tiện trên trang web.
+    localTracks[1].play(`user-${uid}`);
+    // Xuất bản các bản âm thanh và/hoặc video cục bộ lên một kênh.
+    await client.publish([localTracks[0], localTracks[1]]);
 }
 
 let switchToCamera = async () => {
