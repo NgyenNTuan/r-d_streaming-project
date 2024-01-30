@@ -136,8 +136,7 @@ let switchToCamera = async () => {
 }
 
 let handleUserJoined = async (user, mediaType) => {
-    console.log('user join');
-    console.log(user, mediaType);
+    console.log( 'user joined',user, mediaType, uid);
 
     let player = `<div class="video__container" id="user-container-${uid}">
     <div class="video-player" id="user-${uid}"></div>
@@ -153,7 +152,7 @@ let handleUserJoined = async (user, mediaType) => {
 
 let handleUserPublished = async (user, mediaType) => {
     remoteUsers[user.uid] = user
-    console.log('user published')
+    console.log( 'user published',user, mediaType, uid);
 
     // Đăng ký các bản âm thanh và/hoặc video của người dùng từ xa.
     await client.subscribe(user, mediaType)
