@@ -78,6 +78,11 @@ let joinRoomInit = async () => {
     client.on('user-info-updated', handleStates1)
     client.on('stream-type-changed', handleStates2)
     client.on('published-user-list', handleStates3)
+    client.on('stream-added', (e) => {
+        console.log('stream', e);
+        //client.subscribe(e)
+    })
+    client.getListeners()
 }
 
 let handleStates1 = async (user, mediaType)=> {
@@ -249,6 +254,7 @@ let toggleCamera = async (e) => {
 }
 
 let toggleScreen = async (e) => {
+    client.setClientRole('host');
     let screenButton = e.currentTarget
     let cameraButton = document.getElementById('camera-btn')
 
@@ -260,18 +266,25 @@ let toggleScreen = async (e) => {
         cameraButton.style.display = 'none'
 
         // Tạo một đoạn video để chia sẻ màn hình.
-        localScreenTracks = await AgoraRTC.createScreenVideoTrack()
+        localScreenTracks = await AgoraRTC.createScreenVideoTrack({
+            config: {
+                width: { min: 640, ideal: 1920, max: 1920 },
+                height: { min: 480, ideal: 1080, max: 1080 },
+            },
+        });
 
+        console.log('localTrack', localScreenTracks);
+        
         document.getElementById(`user-container-${uid}`).remove()
         displayFrame.style.display = 'block'
-
+        
         let player = `<div class="video__container" id="user-container-${uid}">
-                <div class="video-player" id="user-${uid}"></div>
-            </div>`
-
+        <div class="video-player" id="user-${uid}"></div>
+        </div>`
+        
         displayFrame.insertAdjacentHTML('beforeend', player)
         document.getElementById(`user-container-${uid}`).addEventListener('click', expandVideoFrame)
-
+        
         userIdInDisplayFrame = `user-container-${uid}`
         // Chạy video màn hình
         localScreenTracks.play(`user-${uid}`)
