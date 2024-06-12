@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -69,10 +70,17 @@
             </label>
         </div>
 
-        <div class="input-container">
+        <!-- <div class="input-container">
             <input type="file" id="json_file" accept=".json" />
             <label for="json_file">
                 Select JSON File
+            </label>
+        </div> -->
+
+        <div class="input-container">
+            <input type="file" id="xml_file" accept=".xml" />
+            <label for="xml_file">
+                Select XML File
             </label>
         </div>
 
@@ -110,15 +118,22 @@
             .addEventListener("click", function () {
                 const jsonSheet = [];
                 const inputSheet = document.getElementById("excel_file");
-                const inputXmlJson = document.getElementById("json_file");
+                // const inputXmlJson = document.getElementById("json_file");
+                const inputXml = document.getElementById("xml_file");
 
                 const reader = new FileReader();
 
                 reader.onload = (progressEvent) => {
                     const data = progressEvent.target.result;
-                    const jsonXmlInput = JSON.parse(data);
+                    //const jsonXmlInput = JSON.parse(data);
+                    const parser = new DOMParser();
+                    var doc = parser.parseFromString(data, "application/xml");
+                    const errorNode = doc.querySelector("parsererror");
 
-                    //console.table(1, jsonXmlInput);
+                    if (errorNode) {
+                        alert("error while parsing");
+                    }
+
                     readXlsxFile(inputSheet.files[0]).then(function (data) {
                         const headers = data[0];
                         for (let i = 1; i < data.length; i++) {
@@ -129,17 +144,18 @@
                             jsonSheet.push(temp);
                         }
 
-                        if (!jsonSheet && !jsonXmlInput) {
+                        if (!jsonSheet && !doc) {
                             alert("No file input!")
                             return;
                         }
 
                         const lang = document.getElementById("lang_input").value;
-                        HandleJson(jsonXmlInput, jsonSheet, lang);
+                        HandleJson(doc, jsonSheet, lang);
                     });
                 };
 
-                reader.readAsText(inputXmlJson.files[0]);
+                // reader.readAsText(inputXmlJson.files[0]);
+                reader.readAsText(inputXml.files[0]);
             });
 
         document
@@ -168,22 +184,33 @@
             downloadAnchorNode.remove();
         }
 
-        function HandleJson(json, data, lang) {
-
-            for (let i = 0; i < json.LocalLanguages.data.length; i++) {
-                var indexFound = data.findIndex(x => x.Key == json.LocalLanguages.data[i]._attributes.name);
+        function HandleJson(doc, data, lang) {
+            for (let i = 0; i < doc.querySelectorAll("LocalLanguages data").length; i++) {
+                var indexFound = data.findIndex(x => x.Key == doc.querySelectorAll("LocalLanguages data")[i].getAttribute("name"));
                 if (indexFound != -1 && data[indexFound][lang]) {
-                    json.LocalLanguages.data[i].value = data[indexFound][lang]
+                    doc.querySelectorAll("LocalLanguages data value")[i].textContent = data[indexFound][lang]
                 }
             }
 
-            document.getElementById("json_data")
-                .value = JSON.stringify(
-                    json,
-                    null,
-                    2
-                );
+            // for (let i = 0; i < json.LocalLanguages.data.length; i++) {
+            //     var indexFound = data.findIndex(x => x.Key == json.LocalLanguages.data[i]._attributes.name);
+            //     if (indexFound != -1 && data[indexFound][lang]) {
+            //         json.LocalLanguages.data[i].value = data[indexFound][lang]
+            //     }
+            // }
 
+            // document.getElementById("json_data")
+            //     .value = JSON.stringify(
+            //         json,
+            //         null,
+            //         2
+            //     );
+
+            const serializer = new XMLSerializer();
+            const xmlStr = serializer.serializeToString(doc);
+
+            document.getElementById("json_data")
+                .value = xmlStr;
         }
 
     </script>
