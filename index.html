@@ -96,7 +96,10 @@
             Convert to JSON
         </button>
         <button class="btn" id="copy_btn">
-            Copy JSON
+            Copy Content
+        </button>
+        <button class="btn" id="clear_btn">
+            Clear
         </button>
 
         <div class="input-container">
@@ -105,7 +108,7 @@
         </div>
 
         <button class="btn" id="download_btn">
-            Download JSON File
+            Download XML File
         </button>
     </div>
 
@@ -172,13 +175,20 @@
                 document.execCommand('copy');
             });
 
+        document
+            .getElementById("clear_btn")
+            .addEventListener("click", function () {
+                document.getElementById("json_data")
+                .value = "";
+            });
+
         function downloadObjectAsJson(jsonData, filename) {
             const dataStr =
-                "data:text/json;charset=utf-8," +
+                "data:text/xml;charset=utf-8," +
                 encodeURIComponent(jsonData);
             const downloadAnchorNode = document.createElement("a");
             downloadAnchorNode.setAttribute("href", dataStr);
-            downloadAnchorNode.setAttribute("download", filename + ".json");
+            downloadAnchorNode.setAttribute("download", filename + ".xml");
             document.body.appendChild(downloadAnchorNode);
             downloadAnchorNode.click();
             downloadAnchorNode.remove();
