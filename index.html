@@ -5,57 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Excel to JSON Converter</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-        }
-
-        .input-container {
-            margin-bottom: 20px;
-        }
-
-        .input-container input[type="file"] {
-            display: none;
-        }
-
-        .input-container label {
-            display: block;
-            padding: 10px 15px;
-            background-color: #007bff;
-            color: #fff;
-            text-align: center;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        .input-container label:hover {
-            background-color: #0056b3;
-        }
-
-        .btn {
-            padding: 10px 15px;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .btn:hover {
-            background-color: #0056b3;
-        }
-    </style>
+    <link rel="stylesheet" href="./styles/toolAutoFill.css">
 </head>
 
 <body>
@@ -63,7 +13,7 @@
         <h2>TOOL AUTOFILL RESX</h2>
     </div>
     <div class="container">
-        <div class="input-container">
+        <div class="input-container im-full">
             <input type="file" id="excel_file" accept=".xlsx, .xls" />
             <label for="excel_file">
                 Select Excel File
@@ -77,7 +27,7 @@
             </label>
         </div> -->
 
-        <div class="input-container">
+        <div class="input-container im-full">
             <input type="file" id="xml_file" accept=".xml" />
             <label for="xml_file">
                 Select XML File
@@ -105,6 +55,12 @@
         <div class="input-container">
             <textarea id="json_data" rows="10" cols="50" readonly>
               </textarea>
+            
+            <div class="loading">
+                <div class="loader-container">
+                    <div class="loader spinner"></div>
+                </div>
+            </div>
         </div>
 
         <button class="btn" id="download_btn">
@@ -116,6 +72,8 @@
     </script>
 
     <script>
+        var loader = document.getElementsByClassName("loader-container")[0];
+
         document
             .getElementById("convert_btn")
             .addEventListener("click", function () {
@@ -125,6 +83,7 @@
                 const inputXml = document.getElementById("xml_file");
 
                 const reader = new FileReader();
+                loader.style.display = "block";
 
                 reader.onload = (progressEvent) => {
                     const data = progressEvent.target.result;
@@ -197,6 +156,7 @@
         function HandleJson(doc, data, lang) {
             for (let i = 0; i < doc.querySelectorAll("LocalLanguages data").length; i++) {
                 var indexFound = data.findIndex(x => x.Key == doc.querySelectorAll("LocalLanguages data")[i].getAttribute("name"));
+                
                 if (indexFound != -1 && data[indexFound][lang]) {
                     doc.querySelectorAll("LocalLanguages data value")[i].textContent = data[indexFound][lang]
                 }
@@ -219,6 +179,7 @@
             const serializer = new XMLSerializer();
             const xmlStr = serializer.serializeToString(doc);
 
+            loader.style.display = "none";
             document.getElementById("json_data")
                 .value = xmlStr;
         }
