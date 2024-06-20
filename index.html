@@ -82,6 +82,16 @@
                 // const inputXmlJson = document.getElementById("json_file");
                 const inputXml = document.getElementById("xml_file");
 
+                if (!inputSheet.files[0]) {
+                    alert("Not input Sheet file.")
+                    return;
+                }
+
+                if (!inputXml.files[0]) {
+                    alert("Not input Xml file.")
+                    return;
+                }
+
                 const reader = new FileReader();
                 loader.style.display = "block";
 
@@ -154,34 +164,45 @@
         }
 
         function HandleJson(doc, data, lang) {
-            for (let i = 0; i < doc.querySelectorAll("LocalLanguages data").length; i++) {
-                var indexFound = data.findIndex(x => x.Key == doc.querySelectorAll("LocalLanguages data")[i].getAttribute("name"));
-                
-                if (indexFound != -1 && data[indexFound][lang]) {
-                    doc.querySelectorAll("LocalLanguages data value")[i].textContent = data[indexFound][lang]
-                }
+            if (!doc || !data || !lang) {
+                alert("data input null")
+                loader.style.display = "none";
+                return;
             }
 
-            // for (let i = 0; i < json.LocalLanguages.data.length; i++) {
-            //     var indexFound = data.findIndex(x => x.Key == json.LocalLanguages.data[i]._attributes.name);
-            //     if (indexFound != -1 && data[indexFound][lang]) {
-            //         json.LocalLanguages.data[i].value = data[indexFound][lang]
-            //     }
-            // }
+            if (data[0].Key != null) {
+                for (let i = 0; i < doc.querySelectorAll("LocalLanguages data").length; i++) {
+                    var indexFound = data.findIndex(x => x.Key == doc.querySelectorAll("LocalLanguages data")[i].getAttribute("name"));
 
-            // document.getElementById("json_data")
-            //     .value = JSON.stringify(
-            //         json,
-            //         null,
-            //         2
-            //     );
+                    if (indexFound != -1 && data[indexFound][lang]) {
+                        doc.querySelectorAll("LocalLanguages data value")[i].textContent = data[indexFound][lang]
+                    }
+                }
 
-            const serializer = new XMLSerializer();
-            const xmlStr = serializer.serializeToString(doc);
+                // for (let i = 0; i < json.LocalLanguages.data.length; i++) {
+                //     var indexFound = data.findIndex(x => x.Key == json.LocalLanguages.data[i]._attributes.name);
+                //     if (indexFound != -1 && data[indexFound][lang]) {
+                //         json.LocalLanguages.data[i].value = data[indexFound][lang]
+                //     }
+                // }
 
-            loader.style.display = "none";
-            document.getElementById("json_data")
+                // document.getElementById("json_data")
+                //     .value = JSON.stringify(
+                //         json,
+                //         null,
+                //         2
+                //     );
+
+                const serializer = new XMLSerializer();
+                const xmlStr = serializer.serializeToString(doc);
+
+                loader.style.display = "none";
+                document.getElementById("json_data")
                 .value = xmlStr;
+            } else {
+                alert("Key name is null")
+                loader.style.display = "none";
+            }
         }
 
     </script>
